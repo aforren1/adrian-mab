@@ -43,7 +43,7 @@ x_img = visual.ImageStim(win, image='x_small.png', pos=(0, 0), size=0.3, opacity
 
 # intro screen
 info_text = visual.TextStim(win, text='Press any key to start.',
-                            pos=(0, 0), alignHoriz='center', alignVert='center', height=0.08, color='white')
+                            pos=(0, 0), alignHoriz='center', alignVert='center', height=0.1, color='white')
 
 info_text.draw()
 win.flip()
@@ -64,6 +64,11 @@ def reset_timer(trial_timer, val):
 
 
 total_points = 0
+max_score = 0
+
+data = {'subject': settings['subject'], 'choice': None}  # tack on columns
+data_filename = 'subject%s_%s' % (settings['subject'], settings['file'])
+data_list = []
 
 for trial in trials:  # for i in trials
     # start with blank screen for 1s
@@ -85,6 +90,14 @@ for trial in trials:  # for i in trials
         x_img.draw()
         win.flip()
         core.wait(2)
+        max_score += 100
+        tmp_data = {'subject': settings['subject'],
+                    'choice': -1,
+                    'reaction_time': -1,
+                    'points': total_points,
+                    'max_score': max_score}
+        tmp_data.update(trial)
+        data_list.append(tmp_data)
     else:
         choice, val = resp[0]
         idx = choices.index(choice)
@@ -100,6 +113,14 @@ for trial in trials:  # for i in trials
         slots[idx].toggle_points(True)
         slots[idx].update_points_text(trial[idx])
         total_points += trial[idx]
+        max_score += 100
+        tmp_data = {'subject': settings['subject'],
+                    'choice': idx,
+                    'reaction_time': val,
+                    'points': total_points,
+                    'max_points': max_score}
+        tmp_data.update(trial)
+        data_list.append(tmp_data)
         for i in slots:
             i.draw()
         win.flip()
@@ -111,7 +132,13 @@ for trial in trials:  # for i in trials
         print((choice, val))
         core.wait(0.5 - 1/60)
 
-        # timeout=1.5s
-        # no choice=2s time penalty
-        # 3s animation, then points displayed for 1s
-        # screen cleared, then ~2s delay before next trial
+info_text.text = 'Score: %i / %i' % (total_points, max_score)
+info_text.draw()
+win.flip()
+
+core.wait(4)
+
+dat = pd.DataFrame(data_list)
+dat.to_csv(data_filename, sep=',', index=False)
+
+core.quit()
