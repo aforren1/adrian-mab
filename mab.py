@@ -94,8 +94,7 @@ for trial in trials:  # for i in trials
         tmp_data = {'subject': settings['subject'],
                     'choice': -1,
                     'reaction_time': -1,
-                    'points': total_points,
-                    'max_points': max_score}
+                    'points': 0}
         tmp_data.update(trial)
         data_list.append(tmp_data)
     else:
@@ -117,8 +116,7 @@ for trial in trials:  # for i in trials
         tmp_data = {'subject': settings['subject'],
                     'choice': idx,
                     'reaction_time': val,
-                    'points': total_points,
-                    'max_points': max_score}
+                    'points': trial[idx]}
         tmp_data.update(trial)
         data_list.append(tmp_data)
         for i in slots:
@@ -128,11 +126,12 @@ for trial in trials:  # for i in trials
         slots[idx].toggle_arm(-30)
         slots[idx].toggle_points(False)
         slots[idx].toggle_id(True)
+        for i in slots:
+            i.draw()
         win.flip()
-        print((choice, val))
-        core.wait(0.5 - 1/60)
+        #core.wait(0.5 - 1/60)
 
-info_text.text = 'Score: %i / %i' % (total_points, max_score)
+info_text.text = 'Score: %i' % total_points
 info_text.draw()
 win.flip()
 

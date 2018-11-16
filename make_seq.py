@@ -30,11 +30,17 @@ def make_seq(filename='foo.csv', num_resp=4, warmup=200, num_trials=150, seed=1)
 
 if __name__ == '__main__':
     import argparse
+    import matplotlib.pyplot as plt
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--filename', type=str, default='foo.csv')
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--trials', type=int, default=150)
+    parser.add_argument('--plot', type=bool, default=False)
     args = parser.parse_args()
 
     x = make_seq(args.filename, num_trials=args.trials, seed=args.seed)
+
+    if args.plot:
+        plt.plot(pd.DataFrame(x))
+        plt.show()
