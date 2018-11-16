@@ -26,6 +26,8 @@ settings = dict(settings)
 with open('user_settings.yml', 'w') as f:
     yaml.dump(settings, f, default_flow_style=False)
 
+trials = pd.read_csv(settings['file'], header=False)
+trials = trials.to_dict('records')
 # all done settings, now onto the experiment
 win = visual.Window(units='height', fullscr=True)
 
@@ -54,8 +56,6 @@ for i in slots:
 
 win.flip()
 
-
-#trials = generate_trials(seed=1, trials=150)
 trial_timer = core.Clock()
 
 
@@ -63,7 +63,7 @@ def reset_timer(trial_timer, val):
     trial_timer.reset(val)
 
 
-for i in range(5):  # for i in trials
+for i in trials:  # for i in trials
     # start with blank screen for 1s
     # draw all stim
     for i in slots:

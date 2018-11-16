@@ -6,9 +6,9 @@ def make_seq(filename='foo.csv', num_resp=4, warmup=200, num_trials=150, seed=1)
     # 1-100, Gaussian (sigma=4)
     # t0 = 50?
     rng = np.random.RandomState(seed=seed)
-    vals = []
+    vals = [list() for i in range(num_resp)]
     for i in range(num_resp):
-        # run the process for 100 trials, so everything's asymptotic
+        # run the process for n trials, so everything's asymptotic
         mu = 50
         lam = 0.9836  # decay parameter
         sig_o = 4
@@ -21,10 +21,10 @@ def make_seq(filename='foo.csv', num_resp=4, warmup=200, num_trials=150, seed=1)
             new_val = round(rng.normal(mu, 4))
             new_val = max(new_val, 1)
             new_val = min(new_val, 100)
-            vals.append({'resp': i, 'val': new_val})
-    rng.shuffle(vals)
+            vals[i].append(new_val)
+    vals = np.transpose(np.array(vals))
     df = pd.DataFrame(vals)
-    df.to_csv(filename, sep=',', index=False)
+    df.to_csv(filename, header=False, sep=',', index=False)
     return vals
 
 
