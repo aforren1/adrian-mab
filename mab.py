@@ -1,8 +1,32 @@
+from collections import OrderedDict
 import numpy as np
+import pandas as pd
+import yaml
 from psychopy.visual.rect import Rect
-from psychopy import core, visual, event
+from psychopy import core, visual, event, gui
 from slotmachine import SlotMachine
 
+# settings
+settings = OrderedDict({'subject': '001', 'file': 'foo.csv'})
+
+try:
+    with open('user_settings.yml', 'r') as f:
+        potential_settings = yaml.load(f)
+    if potential_settings.keys() == settings.keys():
+        for i in settings.keys():
+            settings[i] = potential_settings[i]
+except (FileNotFoundError, AttributeError):
+    pass
+
+dlg = gui.DlgFromDict(settings, title='Experiment')
+if not dlg.OK:
+    sys.exit()
+
+settings = dict(settings)
+with open('user_settings.yml', 'w') as f:
+    yaml.dump(settings, f, default_flow_style=False)
+
+# all done settings, now onto the experiment
 win = visual.Window(units='height', fullscr=True)
 
 choices = ['a', 's', 'd', 'f']
@@ -12,6 +36,18 @@ colors = ['yellow', 'blue', 'red', 'green']
 slots = []
 for i, j, k in zip(choices, grid, colors):
     slots.append(SlotMachine(win, id=i.upper(), colour=k, pos=j, size=0.2))
+
+x_img = visual.ImageStim(win, image='x_small.png', pos=(0, 0), size=0.3, opacity=0.8)
+
+# intro screen
+info_text = visual.TextStim(win, text='Press any key to start.',
+                            pos=(0, 0), alignHoriz='center', alignVert='center', height=0.08, color='white')
+
+info_text.draw()
+win.flip()
+
+while not event.getKeys():
+    pass
 
 for i in slots:
     i.draw()
@@ -42,6 +78,8 @@ for i in range(5):  # for i in trials
 
     if trial_timer.getTime() > 1.5:  # 2s penalty
         # show big red X
+        x_img.draw()
+        win.flip()
         core.wait(2)
     else:
         choice, val = resp[0]
