@@ -85,7 +85,7 @@ for trial in trials:  # for i in trials
         if resp:
             break
 
-    if trial_timer.getTime() > 1.5:  # 2s penalty
+    if not resp:  # 2s penalty
         # show big red X
         x_img.draw()
         win.flip()
@@ -95,7 +95,7 @@ for trial in trials:  # for i in trials
                     'choice': -1,
                     'reaction_time': -1,
                     'points': total_points,
-                    'max_score': max_score}
+                    'max_points': max_score}
         tmp_data.update(trial)
         data_list.append(tmp_data)
     else:
