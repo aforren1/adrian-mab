@@ -29,9 +29,9 @@ with open('user_settings.yml', 'w') as f:
 trials = pd.read_csv(settings['file'], header=None)
 trials = trials.to_dict('records')
 # all done settings, now onto the experiment
-win = visual.Window(units='height', fullscr=True)
+win = visual.Window(units='height', fullscr=True, allowGUI=False)
 
-choices = ['a', 's', 'd', 'f']
+choices = ['h', 'u', 'i', 'l']
 #grid = [(-0.2, 0.2), (0.2, 0.2), (-0.2, -0.2), (0.2, -0.2)]
 grid = [(-0.5, -0.1), (-0.166, -0.1), (0.166, -0.1), (0.5, -0.1)]
 colors = ['yellow', 'blue', 'red', 'green']
