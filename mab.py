@@ -26,7 +26,7 @@ settings = dict(settings)
 with open('user_settings.yml', 'w') as f:
     yaml.dump(settings, f, default_flow_style=False)
 
-trials = pd.read_csv(settings['file'], header=False)
+trials = pd.read_csv(settings['file'], header=None)
 trials = trials.to_dict('records')
 # all done settings, now onto the experiment
 win = visual.Window(units='height', fullscr=True)
@@ -63,9 +63,13 @@ def reset_timer(trial_timer, val):
     trial_timer.reset(val)
 
 
-for i in trials:  # for i in trials
+total_points = 0
+
+for trial in trials:  # for i in trials
     # start with blank screen for 1s
     # draw all stim
+    if event.getKeys(['esc', 'escape']):
+        core.quit()
     for i in slots:
         i.draw()
     win.callOnFlip(reset_timer, trial_timer, 0)
@@ -94,7 +98,8 @@ for i in trials:  # for i in trials
             win.flip()
         slots[idx].toggle_ani(False)
         slots[idx].toggle_points(True)
-        slots[idx].update_points_text(np.random.randint(100))
+        slots[idx].update_points_text(trial[idx])
+        total_points += trial[idx]
         for i in slots:
             i.draw()
         win.flip()
