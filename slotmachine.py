@@ -14,7 +14,8 @@ class SlotMachine(object):
         self.body = Rect(win, pos=pos, width=size,
                          height=size, fillColor=colour)
         self.ani = RadialStim(win, pos=pos, size=size * 0.8,
-                              radialCycles=2, angularCycles=2)
+                              radialCycles=2, angularCycles=2,
+                              interpolate=False)
         self.points = TextStim(win, text='Obtained\n0\npoints',
                                pos=pos, height=(size*.8)/6, alignHoriz='center',
                                alignVert='center', color='black')
