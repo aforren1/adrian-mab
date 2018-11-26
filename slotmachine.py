@@ -1,5 +1,5 @@
 from psychopy.visual.rect import Rect
-from psychopy.visual.grating import GratingStim
+from psychopy.visual.radial import RadialStim
 from psychopy.visual.text import TextStim
 
 
@@ -13,8 +13,8 @@ class SlotMachine(object):
                         ori=-30)
         self.body = Rect(win, pos=pos, width=size,
                          height=size, fillColor=colour)
-        self.ani = GratingStim(win, pos=pos, size=size*.8,
-                               texRes=256, sf=[4, 0], ori=45, mask='circle')
+        self.ani = RadialStim(win, pos=pos, size=size * 0.8,
+                              radialCycles=2, angularCycles=2)
         self.points = TextStim(win, text='Obtained\n0\npoints',
                                pos=pos, height=(size*.8)/6, alignHoriz='center',
                                alignVert='center', color='black')
@@ -33,7 +33,7 @@ class SlotMachine(object):
         if self._id:
             self.id.draw()
         if self._ani:
-            self.ani.phase += 0.05
+            self.ani.ori += 2
             self.ani.draw()
         if self._pts:
             self.points.draw()

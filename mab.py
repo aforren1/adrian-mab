@@ -29,7 +29,7 @@ with open('user_settings.yml', 'w') as f:
 trials = pd.read_csv(settings['file'], header=None)
 trials = trials.to_dict('records')
 # all done settings, now onto the experiment
-win = visual.Window(units='height', fullscr=True, allowGUI=False)
+win = visual.Window(units='height', fullscr=True, allowGUI=False, multiSample=True, numSamples=8)
 
 choices = ['h', 'u', 'i', 'l']
 #grid = [(-0.2, 0.2), (0.2, 0.2), (-0.2, -0.2), (0.2, -0.2)]
