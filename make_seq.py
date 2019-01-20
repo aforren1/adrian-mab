@@ -24,8 +24,9 @@ def make_seq(filename='foo.csv', num_resp=4, warmup=200, num_trials=150, seed=1)
             vals[i].append(new_val)
     vals = np.transpose(np.array(vals))
     df = pd.DataFrame(vals)
-    df.to_csv(filename, header=False, sep=',', index=False)
-    return vals
+    if filename:
+        df.to_csv(filename, header=False, sep=',', index=False)
+    return df
 
 
 if __name__ == '__main__':
