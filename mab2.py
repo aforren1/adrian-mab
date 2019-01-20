@@ -1,6 +1,7 @@
 import os
 import sys
 from string import ascii_lowercase
+from datetime import datetime
 
 from collections import OrderedDict
 import numpy as np
@@ -12,7 +13,7 @@ from make_seq import make_seq
 from feedback import Feedback
 
 settings = OrderedDict({'subject': '001'})
-
+dt = datetime.now().strftime('%Y%m%d-%H%M%S')
 dlg = gui.DlgFromDict(settings, title='Experiment')
 
 if not dlg.OK:
@@ -157,8 +158,8 @@ for number_choices, block_table in blocks:
         os.makedirs(directory)
 
     dat = pd.DataFrame(block_data)
-    filename = 'subject%s_block%i_%ichoice.csv' % (settings['subject'],
-                                                   block_count, number_choices)
+    filename = '%s_subject%s_block%i_%ichoice.csv' % (dt, settings['subject'],
+                                                      block_count, number_choices)
     dat.to_csv(os.path.join(directory, filename), sep=',', index=False)
     block_count += 1
     total_points = 0
