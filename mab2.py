@@ -142,8 +142,10 @@ for number_choices, block_table in blocks:
         win.flip()
         core.wait(0.5 - 1/60)
         feedback.state = 'cooldown'
+        feedback.draw()
         remind_txt[number_choices].draw()
         win.flip()
+        core.wait(0.2)
 
     prop_of_possible = round(float(total_points)/float(max_possible), 2)
     intro_txt.text = ('Proportion of max score: %s\n'
