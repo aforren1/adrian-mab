@@ -6,7 +6,6 @@ from datetime import datetime
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-import yaml
 from psychopy.visual.rect import Rect
 from psychopy import core, visual, event, gui
 from make_seq import make_seq
@@ -20,11 +19,12 @@ if not dlg.OK:
     sys.exit()
 
 # generate tables
-seeds = list(range(2))
+blocks_per_section = 2
+practice = 3  # 50 for real
+trials = 3  # 200 for real
+seeds = list(range(blocks_per_section))
 
 blocks = []
-practice = 3
-trials = 3
 # 4-choice
 # warmup
 blocks.append((4, make_seq(filename=None, num_resp=4, num_trials=practice, seed=100)))
