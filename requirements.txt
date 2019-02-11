@@ -1,0 +1,5 @@
+pyglet
+numpy
+pandas
+PyQt5
+psychopy --install-option="--no-deps"
