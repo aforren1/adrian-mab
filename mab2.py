@@ -19,10 +19,11 @@ if not dlg.OK:
     sys.exit()
 
 # generate tables
-blocks_per_section = 2
+blocks_per_section = 1  # 6 for real
 practice = 3  # 50 for real
 trials = 3  # 200 for real
 seeds = list(range(blocks_per_section))
+possible_amounts = []
 
 blocks = []
 # 4-choice
@@ -87,6 +88,9 @@ remind_txt[8] = visual.TextStim(win, text='A, W, E, F, H, U, I, L',
 
 remind_txt[26] = visual.TextStim(win, text='Entire Alphabet', **remind_sets)
 
+wait = visual.Rect(win, width=0.4, height=0.1, pos=(0, -0.3), lineColor=None)
+choice_txt = visual.TextStim(win, text='F', pos=(0, 0), alignHoriz='center',
+                             alignVert='center', height=0.05, color='white')
 intro_txt.draw()
 win.flip()
 event.waitKeys()
@@ -120,7 +124,12 @@ for number_choices, block_table in blocks:
         idx = keys[number_choices].index(choice)
         trial_timer.reset(0)
         feedback.state = 'ani'
+        choice_txt.setText(choice.upper())
         while trial_timer.getTime() <= 0.5:
+            choice_txt.pos = (0.2, 0)
+            choice_txt.draw()
+            choice_txt.pos = (-0.2, 0)
+            choice_txt.draw()
             feedback.draw()
             remind_txt[number_choices].draw()
             win.flip()
@@ -145,15 +154,24 @@ for number_choices, block_table in blocks:
         feedback.draw()
         remind_txt[number_choices].draw()
         win.flip()
-        core.wait(0.2)
+        # core.wait(0.2)
 
     prop_of_possible = round(float(total_points)/float(max_possible), 2)
+    possible_amounts.append(prop_of_possible)
+    intro_txt.text = ('Proportion of max score: %s\n'
+                      'Take a break now.') % prop_of_possible
+    intro_txt.draw()
+    wait.fillColor = 'red'
+    wait.draw()
+    win.flip()
+    core.wait(5)
     intro_txt.text = ('Proportion of max score: %s\n'
                       'Take a break now, and\n'
                       'press any key to continue.') % prop_of_possible
     intro_txt.draw()
+    wait.fillColor = 'green'
+    wait.draw()
     win.flip()
-    event.waitKeys()
 
     directory = 'data/%s' % settings['subject']
     if not os.path.exists(directory):
@@ -166,8 +184,9 @@ for number_choices, block_table in blocks:
     block_count += 1
     total_points = 0
     max_possible = 0
+    event.waitKeys()
 
-# moneys
+# monies
 # $12-18
 brackets = [([0, 1./7], 12),
             ([1./7, 2./7], 13),
@@ -178,7 +197,9 @@ brackets = [([0, 1./7], 12),
             ([6./7, 1], 18)]
 
 cash_to_pay = 15
-print(prop_of_possible)
+cash_to_pay = np.random.choice(possible_amounts)
+print(possible_amounts)
+print(cash_to_pay)
 for fracs, val in brackets:
     if prop_of_possible >= fracs[0] and prop_of_possible < fracs[1]:
         cash_to_pay = val

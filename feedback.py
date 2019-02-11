@@ -9,20 +9,15 @@ class Feedback(object):
                          lineColor='black')
         self.ani = RadialStim(win, pos=pos, size=size*0.8, radialCycles=2,
                               angularCycles=2)
-        self.points_txt = TextStim(win, text='Obtained\n0\npoints.',
-                                   pos=pos, height=(size * .8)/6, alignHoriz='center',
+        self.points_txt = TextStim(win, text='0',
+                                   pos=pos, height=(size * .8)/2, alignHoriz='center',
                                    alignVert='center', color='black')
-        self.idle_txt = TextStim(win, text='Make a choice.',
-                                 pos=pos, height=(size * .8)/6, alignHoriz='center',
-                                 alignVert='center', color='black')
         self.points = 0
         self.state = 'idle'  # idle, ani, points, cooldown
 
     def draw(self):
         self.body.draw()
-        if self.state == 'idle':
-            self.idle_txt.draw()
-        elif self.state == 'ani':
+        if self.state == 'ani':
             self.ani.ori += 2
             self.ani.draw()
         elif self.state == 'points':
@@ -35,4 +30,4 @@ class Feedback(object):
     @points.setter
     def points(self, value):
         self._points = value
-        self.points_txt.text = 'Obtained\n%i\npoints.' % value
+        self.points_txt.text = str(value)
