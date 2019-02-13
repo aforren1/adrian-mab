@@ -2,6 +2,7 @@ import os
 import sys
 from string import ascii_lowercase
 from datetime import datetime
+from time import time
 
 from collections import OrderedDict
 import numpy as np
@@ -100,6 +101,7 @@ trial_timer = core.Clock()
 total_points = 0
 max_possible = 0
 block_count = 0
+time0 = time()
 
 for number_choices, block_table in blocks:
     # intro text
@@ -204,8 +206,9 @@ for fracs, val in brackets:
     if prop_of_possible >= fracs[0] and prop_of_possible < fracs[1]:
         cash_to_pay = val
 
-print('You made %i dollars.' % cash_to_pay)
-intro_txt.text = 'You made %i dollars. Press esc to exit.' % cash_to_pay
+time1 = np.ceil((time() - time0) / 60)
+print('You made %i dollars per hour, and took %i minutes.' % (cash_to_pay, time1))
+intro_txt.text = 'You made %i dollars per hour and took %i minutes.\nPress esc to exit.' % (cash_to_pay, time1)
 intro_txt.draw()
 win.flip()
 event.waitKeys(keyList=['esc', 'escape'])
