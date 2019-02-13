@@ -20,10 +20,12 @@ if not dlg.OK:
     sys.exit()
 
 # generate tables
-blocks_per_section = 1  # 6 for real
-practice = 3  # 50 for real
-trials = 3  # 200 for real
+blocks_per_section = 4  # 4 for real
+practice = 30  # 50 for real
+trials = 200  # 200 for real
 seeds = list(range(blocks_per_section))
+seeds = [s + int(settings['subject']) for s in seeds]
+print(seeds)
 possible_amounts = []
 
 blocks = []
