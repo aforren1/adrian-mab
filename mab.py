@@ -5,6 +5,7 @@ from datetime import datetime
 from time import time
 
 from collections import OrderedDict
+from itertools import chain, permutations
 import numpy as np
 import pandas as pd
 from psychopy.visual.rect import Rect
@@ -32,18 +33,29 @@ blocks = []
 # 4-choice
 # warmup
 # TODO: permute order of blocks
-blocks.append((4, make_seq(filename=None, num_resp=4, num_trials=practice, seed=100)))
+warmup = [(4, make_seq(filename=None, num_resp=4, num_trials=practice, seed=100))]
 
+# match so that first subject (100) was permutation v0
+permute_order = (int(settings['subject']) + 2) % 6
+orderings = list(permutations([0, 1, 2]))
+reordering = orderings[permute_order]
+
+four_blocks = []
 for i in seeds:
-    blocks.append((4, make_seq(filename=None, num_resp=4, num_trials=trials, seed=i)))
+    four_blocks.append((4, make_seq(filename=None, num_resp=4, num_trials=trials, seed=i)))
 
 # 8-choice
+eight_blocks = []
 for i in seeds:
-    blocks.append((8, make_seq(filename=None, num_resp=8, num_trials=trials, seed=i+10)))
+    eight_blocks.append((8, make_seq(filename=None, num_resp=8, num_trials=trials, seed=i+10)))
 
 # 26-choice
+twosix_blocks = []
 for i in seeds:
-    blocks.append((26, make_seq(filename=None, num_resp=26, num_trials=trials, seed=i+10)))
+    twosix_blocks.append((26, make_seq(filename=None, num_resp=26, num_trials=trials, seed=i+10)))
+
+tmp = [four_blocks, eight_blocks, twosix_blocks]
+blocks = warmup + tmp[reordering[0]] + tmp[reordering[1]] + tmp[reordering[2]]
 
 blocks = [(i, x.to_dict('records')) for i, x in blocks]
 keys = {}
