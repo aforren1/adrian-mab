@@ -31,6 +31,7 @@ possible_amounts = []
 blocks = []
 # 4-choice
 # warmup
+# TODO: permute order of blocks
 blocks.append((4, make_seq(filename=None, num_resp=4, num_trials=practice, seed=100)))
 
 for i in seeds:
@@ -182,8 +183,8 @@ for number_choices, block_table in blocks:
         os.makedirs(directory)
 
     dat = pd.DataFrame(block_data)
-    filename = '%s_subject%s_block%i_%ichoice.csv' % (dt, settings['subject'],
-                                                      block_count, number_choices)
+    filename = '%s_subject%s_block%02i_%ichoice.csv' % (dt, settings['subject'],
+                                                        block_count, number_choices)
     dat.to_csv(os.path.join(directory, filename), sep=',', index=False)
     block_count += 1
     total_points = 0
