@@ -64,7 +64,7 @@ keys[8] = ['a', 'w', 'e', 'f'] + keys[4]
 keys[26] = list(ascii_lowercase)
 
 # set up visuals
-win = visual.Window(units='height', fullscr=True, allowGUI=False)
+win = visual.Window(units='height', fullscr=True, allowGUI=False, waitBlanking=False)
 
 feedback = Feedback(win)
 
