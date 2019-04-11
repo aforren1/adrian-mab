@@ -10,19 +10,22 @@ import scipy.stats as ss
 # blocks is 1D array of blocks
 
 
-def bandit_mcmc(action_payoff_mat, blocks, beta=0.08, p_stay=0.9,  # our params
+def bandit_mcmc(action_payoff_mat, blocks, beta=0.2, p_stay=0.75,  # our params
                 batch_size=1, random_state=None):  # ELFI kwargs
     if action_payoff_mat.shape[0] != blocks.shape[0]:
         raise ValueError('Mismatch between the action/payoff matrix & block labels.')
     #
     random_state = random_state or np.random
     xx, num_actions = action_payoff_mat.shape
-
+    beta = np.asanyarray(beta).reshape((-1, 1))
     # uniform distribution on other targets (?)
     qq = (1 - p_stay) / (num_actions - 1)
     # proposal distribution P_ij = P(a_pr = j|a_c = i)
-    p = np.full((num_actions, num_actions), qq)
-    p[np.eye(num_actions) > 0] = p_stay
+    # p = np.full((batch_size, num_actions, num_actions), qq)
+    p = np.repeat(qq, num_actions * num_actions).reshape(batch_size, num_actions, num_actions)
+    i = np.eye(num_actions)
+    i = np.stack([i] * batch_size, axis=0)
+    p[i > 0] = np.repeat(p_stay, num_actions)
 
     actions = []
     for j in np.unique(blocks):
@@ -48,13 +51,14 @@ def bandit_mcmc(action_payoff_mat, blocks, beta=0.08, p_stay=0.9,  # our params
             # get the proposed action for the trial
             proposals = []
             for k in range(accepted_actions.shape[0]):
-                proposals.append(np.argwhere(ss.multinomial.rvs(1, p[accepted_actions[k, i - 1], :]) > 0)[0][0])
+                proposals.append(np.argwhere(ss.multinomial.rvs(1, p[k, accepted_actions[k, i - 1], :]) > 0)[0][0])
 
             selected_actions[:, i] = proposals
             value_selected_action[:, i] = sub_action_payoff[i, proposals]
             aas = []
             for k in range(value_selected_action.shape[0]):
-                aas.append(min(1, np.exp(beta * value_selected_action[k, i]) / np.exp(beta * value_accepted_action[k, i - 1])))
+                aas.append(min(np.array([1]), np.exp(beta[k] * value_selected_action[k, i]) / np.exp(beta[k] * value_accepted_action[k, i - 1])))
+            aas = np.array(aas).T
             accepted[:, i] = random_state.uniform(size=len(aas)) < aas
             for k in range(accepted.shape[0]):
                 if accepted[k, i]:
