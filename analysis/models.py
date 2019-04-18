@@ -22,10 +22,10 @@ def bandit_mcmc(action_payoff_mat, blocks, beta=0.2, p_stay=0.75,  # our params
     qq = (1 - p_stay) / (num_actions - 1)
     # proposal distribution P_ij = P(a_pr = j|a_c = i)
     # p = np.full((batch_size, num_actions, num_actions), qq)
-    p = np.repeat(qq, num_actions * num_actions).reshape(batch_size, num_actions, num_actions)
+    p = np.repeat(qq, batch_size * num_actions * num_actions).reshape(batch_size, num_actions, num_actions)
     i = np.eye(num_actions)
     i = np.stack([i] * batch_size, axis=0)
-    p[i > 0] = np.repeat(p_stay, num_actions)
+    p[i > 0] = p_stay
 
     actions = []
     for j in np.unique(blocks):
