@@ -5,11 +5,12 @@ import elfi
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from models import bandit_mcmc
+#from models import bandit_mcmc
+from bandit_mcmc import bandit_mcmc_batch
 
 data = pd.read_csv('cleaned_data.csv', index_col=False)
 
-sub_100_4_choice = data.query('subject == 100 and choices == 4')
+sub_100_4_choice = data.query('subject == 100 and block == 1')
 search_dig = re.compile(r'\d+')
 reward_cols = [col for col in sub_100_4_choice if search_dig.search(col) and not sub_100_4_choice[col].isnull().values.any()]
 
@@ -24,7 +25,7 @@ beta = elfi.Prior('beta', 0.7, 0.9)
 # p_stay should be [0, 1]
 p_stay = elfi.Prior('beta', 0.9, 0.7)
 
-sim = elfi.Simulator(bandit_mcmc, action_payoff_mat, blocks,
+sim = elfi.Simulator(bandit_mcmc_batch, action_payoff_mat, blocks,
                      beta, p_stay, observed=sub_100_4_choice['choice'].values[np.newaxis, :])
 
 
@@ -51,7 +52,7 @@ def stickiness(actions, lag=1):
 
 def average_reward(actions, action_payoff_mat=None):
     # average across all blocks
-    return np.mean(action_payoff_mat[np.arange(len(action_payoff_mat)), actions])/100
+    return np.mean(action_payoff_mat[np.arange(len(action_payoff_mat)), actions], axis=1)/100
 
 
 stickiness(best_action[np.newaxis, :])
@@ -59,7 +60,7 @@ stickiness(best_action[np.newaxis, :])
 # at lags of 1 and 2
 S1 = elfi.Summary(stickiness, sim, 1)
 S2 = elfi.Summary(stickiness, sim, 2)
-S3 = elfi.Summary(average_reward, action_payoff_mat)
+S3 = elfi.Summary(average_reward, sim, action_payoff_mat)
 
 d = elfi.Distance('euclidean', S1, S2, S3)
 # elfi.draw(d).view()
