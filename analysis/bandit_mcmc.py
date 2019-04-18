@@ -135,3 +135,6 @@ if __name__ == '__main__':
     res2 = bandit_mcmc_batch(action_payoff_mat, blocks, random_state=rs)
 
     print((res1 == res2[0]).all())
+
+    def stickiness(actions, lag=1):
+        return np.mean(np.diff(actions, n=lag, axis=1) == 0, axis=1)

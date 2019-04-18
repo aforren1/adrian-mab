@@ -51,7 +51,7 @@ def stickiness(actions, lag=1):
 
 def average_reward(actions, action_payoff_mat=None):
     # average across all blocks
-    return np.mean(action_payoff_mat[np.arange(len(action_payoff_mat)), res])
+    return np.mean(action_payoff_mat[np.arange(len(action_payoff_mat)), actions])/100
 
 
 stickiness(best_action[np.newaxis, :])
@@ -59,8 +59,9 @@ stickiness(best_action[np.newaxis, :])
 # at lags of 1 and 2
 S1 = elfi.Summary(stickiness, sim, 1)
 S2 = elfi.Summary(stickiness, sim, 2)
+S3 = elfi.Summary(average_reward, action_payoff_mat)
 
-d = elfi.Distance('euclidean', S1, S2)
+d = elfi.Distance('euclidean', S1, S2, S3)
 # elfi.draw(d).view()
 elfi.set_client('multiprocessing')
 elfi.set_client(elfi.clients.multiprocessing.Client(num_processes=3))
