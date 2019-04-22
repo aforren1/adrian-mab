@@ -3,7 +3,7 @@ __pycache__/
 data/001/
 
 .Rproj.user
-*.csv
+
 .Rhistory
 *.Rproj
 *.gv
