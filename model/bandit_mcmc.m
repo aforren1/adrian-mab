@@ -1,4 +1,4 @@
-function [r a accept aa ac] = bandit4_mcmc(V,beta,q)
+function sim = bandit4_mcmc(V,beta,q)
 % simulate mcmc on a single run with a particular time-evolving payoff V
 
 [Na Nt] = size(V); % number of actions and timesteps
@@ -56,5 +56,12 @@ for i=2:Nt
 end
 
 r = Va;
+
+sim.r = r;
+sim.a = a;
+sim.accept = accept;
+sim.aa = aa;
+sim.ac = ac;
+
     
     

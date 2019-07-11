@@ -1,7 +1,7 @@
 function data = loadSubjData(subjname)
 % load data from an individual participant in the MCMC experiment
 
-datapath = ['../data/',subjname,'/'];
+datapath = ['../../data/',subjname,'/'];
 disp(datapath);
 fnames = dir(datapath);
 Nblocks = size(fnames,1)-2;
