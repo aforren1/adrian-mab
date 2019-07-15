@@ -48,6 +48,9 @@ end
 AA = repmat([1:Na],Ns,1);
 o = ones(Ns,1);
 
+% pre-sample random numbers for sampling from the multinomial
+a_samp = rand(Ns,Nt);
+
 % start simulation
 for i=2:Nt
     % define proposal distribution
@@ -63,7 +66,11 @@ for i=2:Nt
     P_ap_ac(ii) = Pstick; % probability of proposal distribution given    
     
     %[~, a_pr] = find(mnrnd(1,P_ap_ac)); % sample from proposal distribution
-    a_pr = mnrnd(1,P_ap_ac)*[1:Na]';
+    % sample from multinomial. NB - not that easy to read but hopefully
+    % much faster than using mnrnd
+    a_pr = sum(repmat(a_samp(:,i),1,Na) > cumsum(P_ap_ac,2),2)+1;
+    %repmat(a_samp(:,i),1,Na-1)
+    %a_pr = mnrnd(1,P_ap_ac)*[1:Na]';
     
     a(:,i) = a_pr; % actual action i = proposed action
     Va(:,i) = V(a_pr,i); % actual value of action i
