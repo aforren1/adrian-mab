@@ -11,14 +11,14 @@ for cond = 1:3 % condition number
         for subj = 1:18 % subject number
             
             % model parameters
-            beta = .14;
+            beta = .15;
             q = 0.8;
             
             V = data.values{subj,run,cond};
             sim = bandit_mcmc(V,beta,q);
             sim_mcmc{cond}(subj,run) = process_data(sim);
             
-            sim = bandit_mcmc_prior(V,beta,[.9 60]);
+            sim = bandit_mcmc_priorV(V,beta,[.9 60],5);
             sim_mcmc_prior{cond}(subj,run) = process_data(sim);
             
             mcmc_all.p_stick(subj,:,run,cond) = sim_mcmc{cond}(subj,run).p_stick;
@@ -32,6 +32,10 @@ for cond = 1:3 % condition number
 end
 toc
 %% aggregate
+mcmcAv_subj = average_data(mcmc_all);
+mcmcP_Av_subj = average_data(mcmc_prior_all);
+
+%{
 mcmcAv_blocks.p_stick = squeeze(nanmean(mcmc_all.p_stick,3));
 mcmcAv_blocks.ar = squeeze(nanmean(mcmc_all.ar,3));
 
@@ -44,6 +48,7 @@ mcmcP_Av_blocks.ar = squeeze(nanmean(mcmc_prior_all.ar,3));
 
 mcmcP_Av_subj.p_stick = squeeze(nanmean(mcmcP_Av_blocks.p_stick,1));
 mcmcP_Av_subj.ar = squeeze(nanmean(mcmcP_Av_blocks.ar,1));
+%}
 %% plot single run
 %{
 subj = 1;

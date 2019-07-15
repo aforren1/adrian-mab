@@ -44,7 +44,7 @@ for i=2:Nt
     P_ap_ac = (1-Pstick)*ones(1,Na)/(Na-1); % probability for each other key
     P_ap_ac(ac) = Pstick; % probability of proposal distribution given    
     
-    a_pr = find(mnrnd(1,P_ap_ac)); % same from proposal distribution
+    Pa_pr = find(mnrnd(1,P_ap_ac)); % same from proposal distribution
     
     a(i) = a_pr; % actual action i = proposed action
     Va(i) = V(a_pr,i); % actual value of action i

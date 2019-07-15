@@ -7,3 +7,5 @@ for d = 1:15 % delay
     previous = a(:,1:end-d);
     psame(:,d) = nanmean(current==previous,2);
 end
+
+psame = nanmean(psame);
