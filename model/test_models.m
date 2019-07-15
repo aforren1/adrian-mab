@@ -15,17 +15,24 @@ for cond = 1:3 % condition number
             q = 0.8;
             
             V = data.values{subj,run,cond};
-            sim = bandit_mcmc(V,beta,q);
+            %sim = bandit_mcmc(V,beta,q);
+            sim = bandit_mcmc_priorV(V,beta,q,50);
             sim_mcmc{cond}(subj,run) = process_data(sim);
             
-            sim = bandit_mcmc_priorV(V,beta,[.9 60],5);
+            sim = bandit_mcmc_prior(V,beta,[q 60]);
             sim_mcmc_prior{cond}(subj,run) = process_data(sim);
+            
+            sim = bandit_mcmc_priorV(V,beta,[q 60],50);
+            sim_mcmc_priorV{cond}(subj,run) = process_data(sim);
             
             mcmc_all.p_stick(subj,:,run,cond) = sim_mcmc{cond}(subj,run).p_stick;
             mcmc_all.ar(subj,:,run,cond) = sim_mcmc{cond}(subj,run).ar;
             
             mcmc_prior_all.p_stick(subj,:,run,cond) = sim_mcmc_prior{cond}(subj,run).p_stick;
             mcmc_prior_all.ar(subj,:,run,cond) = sim_mcmc_prior{cond}(subj,run).ar;
+            
+            mcmc_prior_allV.p_stick(subj,:,run,cond) = sim_mcmc_priorV{cond}(subj,run).p_stick;
+            mcmc_prior_allV.ar(subj,:,run,cond) = sim_mcmc_priorV{cond}(subj,run).ar;
             
         end
     end
@@ -34,7 +41,7 @@ toc
 %% aggregate
 mcmcAv_subj = average_data(mcmc_all);
 mcmcP_Av_subj = average_data(mcmc_prior_all);
-
+mcmcPV_Av_subj = average_data(mcmc_prior_allV);
 %{
 mcmcAv_blocks.p_stick = squeeze(nanmean(mcmc_all.p_stick,3));
 mcmcAv_blocks.ar = squeeze(nanmean(mcmc_all.ar,3));
@@ -81,6 +88,7 @@ for c=1:3
     plot(dAv_subj.p_stick(:,c),'color','k','linewidth',c)
     plot(mcmcAv_subj.p_stick(:,c),'color','g','linewidth',c)
     plot(mcmcP_Av_subj.p_stick(:,c),'color','r','linewidth',c)
+    plot(mcmcPV_Av_subj.p_stick(:,c),'b','linewidth',c)
     %plot(dAv_subj.r_av(:,c),'color','r','linewidth',c)
 end
 xlabel('reward')
@@ -94,6 +102,7 @@ for c=1:3
     plot(dAv_subj.ar(:,c),'color','k','linewidth',c)
     plot(mcmcAv_subj.ar(:,c),'color','g','linewidth',c)
     plot(mcmcP_Av_subj.ar(:,c),'color','r','linewidth',c)
+    plot(mcmcPV_Av_subj.ar(:,c),'b','linewidth',c)
     %plot(dAv_subj.r_av(:,c),'color','r','linewidth',c)
 end
 xlabel('reward')

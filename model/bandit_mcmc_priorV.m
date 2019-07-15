@@ -36,18 +36,28 @@ end
 %qq = (1-q)/(Na-1); % uniform distribution on other targets
 
 % proposal parameters
-q1 = q(1);
-q2 = 1-q(1);
-q3 = q(2);
+if(length(q)==2)
+    model = 'prior';
+    q1 = q(1);
+    q2 = 1-q(1);
+    q3 = q(2);
+else
+    model = 'no_prior';
+end
 
 AA = repmat([1:Na],Ns,1);
+o = ones(Ns,1);
 
 % start simulation
 for i=2:Nt
     % define proposal distribution
     
     %Pstick = q1*exp(beta*Vc)./((Na-1)*exp(beta*q3)+exp(beta*Vc))+q2; % for this line, stick prob DOES depend on # actions available
-    Pstick = q1*exp(beta*Vc)./(exp(beta*q3)+exp(beta*Vc))+q2; % for this line, stick probability DOESN'T depend on # actions available
+    if strcmp(model,'prior')
+        Pstick = q1*exp(beta*Vc)./(exp(beta*q3)+exp(beta*Vc))+q2; % for this line, stick probability DOESN'T depend on # actions available
+    else
+        Pstick = q*o;
+    end
     P_ap_ac = (1-Pstick)*ones(1,Na)/(Na-1); % probability for each other key
     ii = sub2ind([Ns Na],[1:Ns]',ac); % get linear index for 'stick' action for each sample
     P_ap_ac(ii) = Pstick; % probability of proposal distribution given    
@@ -76,7 +86,11 @@ for i=2:Nt
     
     % return probability - i.e. probability that you would sample current
     % accepted action from proposal
-    Pstick2 = q1*exp(beta*V_pr)./(exp(beta*q3)+exp(beta*V_pr))+q2; % for this line, stick probability DOESN'T depend on # actions available
+    if strcmp(model,'prior')
+        Pstick2 = q1*exp(beta*V_pr)./(exp(beta*q3)+exp(beta*V_pr))+q2; % for this line, stick probability DOESN'T depend on # actions available
+    else
+        Pstick2 = q*o;
+    end
     P_ac_ap = (1-Pstick2)*ones(1,Na)/(Na-1); % probability for each other key
     ii = sub2ind([Ns Na],[1:Ns]',a_pr); % get linear index for 'stick' action for each sample
     P_ac_ap(ii) = Pstick2; % probability of proposal distribution given  
