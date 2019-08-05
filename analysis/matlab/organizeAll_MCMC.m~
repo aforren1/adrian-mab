@@ -14,7 +14,7 @@ for subj = 1:Nsubj
         for b = 1:Nblocks
             if(d{subj}(b).condition==c)
                 data.p_stick(subj,:,ib,c) = d{subj}(b).p_stick;
-                data.N_rwd(subj,:,ib,c) = d{subj}(b).N_rwd;
+                data.N_rwd(subj,
                 data.r_av(subj,:,ib,c) = d{subj}(b).r_av;
                 data.ar(subj,:,ib,c) = d{subj}(b).ar;
                 data.Noptions(subj,ib,c) = d{subj}(b).Noptions;

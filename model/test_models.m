@@ -16,13 +16,13 @@ for cond = 1:3 % condition number
             
             V = data.values{subj,run,cond};
             %sim = bandit_mcmc(V,beta,q);
-            sim = bandit_mcmc_priorV(V,beta,q,50);
+            sim = bandit_mcmc_priorV(V,beta,q,100);
             sim_mcmc{cond}(subj,run) = process_data(sim);
             
             sim = bandit_mcmc_prior(V,beta,[q 60]);
             sim_mcmc_prior{cond}(subj,run) = process_data(sim);
             
-            sim = bandit_mcmc_priorV(V,beta,[q 60],50);
+            sim = bandit_mcmc_priorV(V,beta,[q 60],100);
             sim_mcmc_priorV{cond}(subj,run) = process_data(sim);
             
             mcmc_all.p_stick(subj,:,run,cond) = sim_mcmc{cond}(subj,run).p_stick;
