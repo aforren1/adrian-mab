@@ -7,9 +7,8 @@ load ../analysis/matlab/MCMC_all_clean
 
 
 for cond = 1:3
-    for subj = 1:18
+    for subj = 1:2
     clear V
-    disp(['Subj ',num2str(subj),', condition ',num2str(cond)])
         
         for r=1:4
             V(:,:,r) = data.values{subj,r,cond};
@@ -19,19 +18,29 @@ for cond = 1:3
         data_N_rwd = squeeze(data.N_rwd(subj,:,:,cond));
         
         %error_fun = @(params) model_error(params(1),params(2),V,data_ar',data_pstick')
-        error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+        error_fun = @(params) model_lik([params(1) params(2)],[params(3) params(4)],V,data_ar',data_pstick',data_N_rwd')
         
-        paramsInit = [.14 .8 .6];
+        paramsInit = [.2 .2 .8 .8];
+        
+        % visualize switch policy for initial parameters
+        figure(4); clf; hold on
+        rr = [1:100];
+        pstick_r = paramsInit(4)*exp(paramsInit(2)*rr)./(exp(paramsInit(2)*paramsInit(3)*100)+exp(paramsInit(2)*rr))+(1-paramsInit(4));
+        plot(rr,pstick_r,'k')
+        
         error_fun(paramsInit);
         
+        % adjust settings for fmincon
+        %optcon = optimoptions('fmincon','display','iter','MaxFunEvals',30000,'StepTolerance',1e-2);
         pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
+        %pOpt = fminunc(error_fun,paramsInit);
         %pOpt = fmincon(error_fun,paramsInit)
         [~, m] = error_fun(pOpt);
         model.pOpt(:,subj,cond) = pOpt;
         model.ar(:,:,subj,cond) = m.ar;
         model.p_stick(:,:,subj,cond) = m.p_stick;
-        %model.r(:,:,subj,cond) = m.r;
         model.rAv(:,:,subj,cond) = m.rAv;
+        
     end
 end
 
@@ -40,23 +49,28 @@ fhandle = figure(2); clf; hold on
 set(fhandle,'Position', [200 200 800 300])
 set(fhandle,'Color','w')
 
-subplot(1,3,1); hold on
+subplot(1,4,1); hold on
 plot(squeeze(model.pOpt(1,:,:))','.-')
 ylabel('beta')
 xlabel('condition')
 
-subplot(1,3,2); hold on
+subplot(1,4,2); hold on
 plot(squeeze(model.pOpt(2,:,:))','.-')
 ylabel('q(1)')
 xlabel('condition')
 
-subplot(1,3,3); hold on
-plot(100*squeeze(model.pOpt(3,:,:))','.-')
+subplot(1,4,3); hold on
+plot(squeeze(model.pOpt(3,:,:))','.-')
+ylabel('q(2)')
+xlabel('condition')
+
+subplot(1,4,4); hold on
+plot(100*squeeze(model.pOpt(4,:,:))','.-')
 ylabel('q(2)')
 xlabel('condition')
 
 clear fhandle
-%save model_fits_mcmc_noPrior
+save model_fits_mcmc_noPrior
 
 %% plot averaged data
 load MCMC_all_clean
@@ -86,7 +100,7 @@ end
 %% Plot sim reward vs actual reward
 model.rAv = permute(model.rAv,[3 2 1 4]);
 model.mean_rwd = squeeze(mean(model.rAv,2));
-data.mean_rwd = squeeze(mean(data.r,2));
+data.mean_rwd = squeeze(sum(data.r,2));
 
 f = figure(4); clf; hold on
 set(f,'Position',[300 250 700 300])
@@ -94,11 +108,7 @@ set(f,'Color','w')
 
 for c=1:3
     subplot(1,3,c); hold on
-    plot(model.mean_rwd(:,:,c),data.mean_rwd(:,:,c),'o')
+    plot(model.mean_rwd(:,:,c),data.mean_rwd(1:2,:,c),'o')
     axis equal
-    plot([50 75],[50 75],'k:')
-    xlabel('Model')
-    ylabel('Data')
+    plot(
 end
-
-save model_fits_1beta

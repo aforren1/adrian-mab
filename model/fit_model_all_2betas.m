@@ -5,12 +5,12 @@ addpath ../analysis/matlab
 % load some data to compare model to
 load ../analysis/matlab/MCMC_all_clean
 
-
+tic
 for cond = 1:3
     for subj = 1:18
     clear V
-    disp(['Subj ',num2str(subj),', condition ',num2str(cond)])
-        
+        disp(['Subj ',num2str(subj),', Condition ',num2str(cond)])    
+    
         for r=1:4
             V(:,:,r) = data.values{subj,r,cond};
         end
@@ -19,39 +19,55 @@ for cond = 1:3
         data_N_rwd = squeeze(data.N_rwd(subj,:,:,cond));
         
         %error_fun = @(params) model_error(params(1),params(2),V,data_ar',data_pstick')
-        error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+        error_fun = @(params) model_lik([params(1) params(2)],[params(3) params(4)],V,data_ar',data_pstick',data_N_rwd');
         
-        paramsInit = [.14 .8 .6];
+        paramsInit = [.5 .2 .95 .7];
+        
+        % visualize switch policy for initial parameters
+        figure(4); clf; hold on
+        rr = [1:100];
+        pstick_r = paramsInit(4)*exp(paramsInit(2)*rr)./(exp(paramsInit(2)*paramsInit(3)*100)+exp(paramsInit(2)*rr))+(1-paramsInit(4));
+        plot(rr,pstick_r,'k')
+        
         error_fun(paramsInit);
         
+        % adjust settings for fmincon
+        %optcon = optimoptions('fmincon','display','iter','MaxFunEvals',30000,'StepTolerance',1e-2);
         pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
+        %pOpt = fminunc(error_fun,paramsInit);
         %pOpt = fmincon(error_fun,paramsInit)
         [~, m] = error_fun(pOpt);
         model.pOpt(:,subj,cond) = pOpt;
         model.ar(:,:,subj,cond) = m.ar;
         model.p_stick(:,:,subj,cond) = m.p_stick;
-        %model.r(:,:,subj,cond) = m.r;
         model.rAv(:,:,subj,cond) = m.rAv;
+        
     end
 end
+toc
 
 %% compare parameters across conditions
 fhandle = figure(2); clf; hold on
 set(fhandle,'Position', [200 200 800 300])
 set(fhandle,'Color','w')
 
-subplot(1,3,1); hold on
+subplot(1,4,1); hold on
 plot(squeeze(model.pOpt(1,:,:))','.-')
 ylabel('beta')
 xlabel('condition')
 
-subplot(1,3,2); hold on
+subplot(1,4,2); hold on
 plot(squeeze(model.pOpt(2,:,:))','.-')
 ylabel('q(1)')
 xlabel('condition')
 
-subplot(1,3,3); hold on
-plot(100*squeeze(model.pOpt(3,:,:))','.-')
+subplot(1,4,3); hold on
+plot(squeeze(model.pOpt(3,:,:))','.-')
+ylabel('q(2)')
+xlabel('condition')
+
+subplot(1,4,4); hold on
+plot(100*squeeze(model.pOpt(4,:,:))','.-')
 ylabel('q(2)')
 xlabel('condition')
 
@@ -101,4 +117,4 @@ for c=1:3
     ylabel('Data')
 end
 
-save model_fits_1beta
+save model_fits_2betas

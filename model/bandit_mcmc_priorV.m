@@ -30,6 +30,10 @@ if(nargin<2)
     beta = .1; % selection 'temperature'
 end
 
+if(length(beta)==1) % allow for two values of beta - one for selection, one for prior
+    beta = beta*[1 1]; % set them the same unless beta is supplied as a two-element vector
+end
+
 if(nargin<3)
     q = [.7 40]; % [p(stay) switch prob]
 end
@@ -57,7 +61,7 @@ for i=2:Nt
     
     %Pstick = q1*exp(beta*Vc)./((Na-1)*exp(beta*q3)+exp(beta*Vc))+q2; % for this line, stick prob DOES depend on # actions available
     if strcmp(model,'prior')
-        Pstick = q1*exp(beta*Vc)./(exp(beta*q3)+exp(beta*Vc))+q2; % for this line, stick probability DOESN'T depend on # actions available
+        Pstick = q1*exp(beta(2)*Vc)./(exp(beta(2)*q3)+exp(beta(2)*Vc))+q2; % for this line, stick probability DOESN'T depend on # actions available
     else
         Pstick = q*o;
     end
@@ -94,7 +98,7 @@ for i=2:Nt
     % return probability - i.e. probability that you would sample current
     % accepted action from proposal
     if strcmp(model,'prior')
-        Pstick2 = q1*exp(beta*V_pr)./(exp(beta*q3)+exp(beta*V_pr))+q2; % for this line, stick probability DOESN'T depend on # actions available
+        Pstick2 = q1*exp(beta(2)*V_pr)./(exp(beta(2)*q3)+exp(beta(2)*V_pr))+q2; % for this line, stick probability DOESN'T depend on # actions available
     else
         Pstick2 = q*o;
     end
@@ -104,13 +108,18 @@ for i=2:Nt
     
     i_ac = sub2ind([Ns Na],[1:Ns]',ac);
     i_a_pr = sub2ind([Ns Na],[1:Ns]',a_pr);
-    aa(:,i) = min(1,exp(beta*V_pr).*P_ac_ap(i_ac)./(exp(beta*Vc).*P_ap_ac(i_a_pr)));
+    aa(:,i) = min(1,exp(beta(1)*V_pr).*P_ac_ap(i_ac)./(exp(beta(1)*Vc).*P_ap_ac(i_a_pr)));
     
     accept(:,i) = rand(Ns,1)<aa(:,i); % determine whether to accept/reject
     
     % update accepted action and value if accepted
     ac(accept(:,i)) = a_pr(accept(:,i));
     Vc(accept(:,i)) = V_pr(accept(:,i));
+    
+    % if current action is accepted action, update Vc
+    Vc(ac==a(:,i)) = V_pr(ac==a(:,i));
+    
+    
     %if(accept(i))
     %    ac = a_pr;
     %    Vc = V_pr;

@@ -5,12 +5,12 @@ addpath ../analysis/matlab
 % load some data to compare model to
 load ../analysis/matlab/MCMC_all_clean
 
-
+tic
 for cond = 1:3
     for subj = 1:18
     clear V
-    disp(['Subj ',num2str(subj),', condition ',num2str(cond)])
-        
+        disp(['Subj ',num2str(subj),', Condition ',num2str(cond)])
+    
         for r=1:4
             V(:,:,r) = data.values{subj,r,cond};
         end
@@ -19,22 +19,20 @@ for cond = 1:3
         data_N_rwd = squeeze(data.N_rwd(subj,:,:,cond));
         
         %error_fun = @(params) model_error(params(1),params(2),V,data_ar',data_pstick')
-        error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+        error_fun = @(params) model_lik_pstickRwd(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
         
         paramsInit = [.14 .8 .6];
         error_fun(paramsInit);
         
         pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
-        %pOpt = fmincon(error_fun,paramsInit)
         [~, m] = error_fun(pOpt);
         model.pOpt(:,subj,cond) = pOpt;
         model.ar(:,:,subj,cond) = m.ar;
         model.p_stick(:,:,subj,cond) = m.p_stick;
-        %model.r(:,:,subj,cond) = m.r;
         model.rAv(:,:,subj,cond) = m.rAv;
     end
 end
-
+toc
 %% compare parameters across conditions
 fhandle = figure(2); clf; hold on
 set(fhandle,'Position', [200 200 800 300])
@@ -56,7 +54,7 @@ ylabel('q(2)')
 xlabel('condition')
 
 clear fhandle
-%save model_fits_mcmc_noPrior
+save model_fits_mcmc_noPrior
 
 %% plot averaged data
 load MCMC_all_clean
@@ -67,6 +65,7 @@ mcmc.pOpt = model.pOpt;
 
 data_av = average_data(data);
 mcmc_av = average_data(mcmc);
+
 f = figure(3); clf; hold on
 set(f,'Position',[300 250 700 300])
 set(f,'Color','w')
@@ -101,4 +100,4 @@ for c=1:3
     ylabel('Data')
 end
 
-save model_fits_1beta
+save model_fits_soft_stick

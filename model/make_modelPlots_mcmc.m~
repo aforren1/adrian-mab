@@ -1,0 +1,9 @@
+% plot model fits
+
+f = figure(1); clf; hold on
+set(f,'Position',[100,150,1200,1200])
+set(f,'Color','w')
+
+
+for s = 1:18
+    subplot(3,
