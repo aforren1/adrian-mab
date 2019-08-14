@@ -1,6 +1,9 @@
-function sim = bandit4_KF_softmax(V,params,Nsamp)
+function sim = bandit4_KF_softmax(V,params,Ns)
 % bandit problem with KF value estimation and softmax action selection
+% V = Vectorized
+
 Na = size(V,1); % number of actions available
+Nt = size(V,2); % number of trials
 rng(1);
 if(nargin<2)
     alpha = 0; % default to no stickiness
@@ -23,25 +26,23 @@ else
 end
 
 if(nargin<3)
-    Nsamp = 10;
+    Ns = 10;
 end
 
 
-for s=1:Nsamp
+%for s=1:Nsamp
     % tracking value of different options
-    mu_pre = zeros(size(V));
-    sigma2_pre = zeros(size(V));
-    mu_post = zeros(size(V));
-    sigma2_post = zeros(size(V));
-    
-    
-    Nt = size(V,2);
+    mu_pre = zeros([Ns Na Nt]);
+    sigma2_pre = mu_pre;
+    mu_post = mu_pre;
+    sigma2_post = mu_pre;
+   
     
     % First timestep
     % pick first action at random
     %aa(:) = mnrnd(1,ones(1,Na)/Na);
     %a_samp = rand(1,Nt);
-    a(1) = mnrnd_fast(ones(1,Na)/Na);
+    a(:,1) = mnrnd_fast(ones(Ns,Na)/Na);
     %a(1) = sum(a_samp(:,i)) > cumsum(P_ap_ac,2),2)+1;
     %a(1) = find(aa);
     
@@ -49,36 +50,40 @@ for s=1:Nsamp
     for i=1:Nt
         % update prior
         if(i==1)
-            mu_pre(:,i) = lambda*mu_0 + (1-lambda)*theta*ones(Na,1);
-            sigma2_pre(:,i) = lambda^2*sigma2_0 + sigma_d^2;
+            mu_pre(:,:,i) = lambda*mu_0 + (1-lambda)*theta;
+            sigma2_pre(:,:,i) = lambda^2*sigma2_0 + sigma_d^2;
         else
-            mu_pre(:,i) = lambda*mu_post(:,i-1) + (1-lambda)*theta*ones(Na,1);
-            sigma2_pre(:,i) = lambda^2*sigma2_post(:,i-1) + sigma_d^2;
+            mu_pre(:,:,i) = lambda*mu_post(:,:,i-1) + (1-lambda)*theta;
+            sigma2_pre(:,:,i) = lambda^2*sigma2_post(:,:,i-1) + sigma_d^2;
         end
         
         % select action
         % softmax
         
-        if(rand(1)<alpha & i>1)
-            a(i) = a(i-1);
+        if(i>1)
+            stick = rand(Ns,1)<alpha;
+            a(stick,i) = a(stick,i-1);
         else
-            P = exp(beta*mu_pre(:,i))/sum(exp(beta*mu_pre(:,i)));
+            P = exp(beta*mu_pre(:,:,i))./repmat(sum(exp(beta*mu_pre(:,:,i)),2),1,Na);
             %aa = mnrnd(1,P); % sample from softmax distribution
             %a(i) = find(aa);
-            a(i) = mnrnd_fast(P');
+            a(:,i) = mnrnd_fast(P);
         end
         
-        r(i) = V(a(i),i); % reward on trial 1
-        delta(i) = r(i) - mu_pre(a(i),i); % reward prediction error
-        kappa(i) = sigma2_pre(a(i),i)/(sigma2_pre(a(i),i)+sigma_o^2);
+        r(:,i) = V(a(:,i),i); % reward on trial 1
+        ia = sub2ind([Ns Na],[1:Ns],a(:,i)');
+        mu_pre_i = mu_pre(:,:,i);
+        s2_pre_i = sigma2_pre(:,:,i);
+        delta(:,i) = r(:,i) - mu_pre_i(ia)'; % reward prediction error
+        kappa(:,i) = s2_pre(ia)/(s2_pre(ia)+sigma_o^2);
         
         % kalman update
-        mu_post(:,i) = mu_pre(:,i);
-        sigma2_post(:,i) = sigma2_pre(:,i);
+        mu_post(:,:,i) = mu_pre(:,:,i);
+        sigma2_post(:,:,i) = sigma2_pre(:,:,i);
         
         %update observed elements
-        mu_post(a(i),i) = mu_pre(a(i),i) + kappa(i)*delta(i);
-        sigma2_post(a(i),i) = (1-kappa(i))*sigma2_pre(a(i),i);
+        mu_post(:,a(:,i),i) = mu_pre(:,a(:,i),i) + kappa(:,i)*delta(:,i);
+        sigma2_post(:,a(:,i),i) = (1-kappa(:,i))*sigma2_pre(:,a(:,i),i);
         
         %a_not_chosen = find(aa==0);
         %mu_post(a_not_chosen,i) = mu_pre(a_not_chosen,i);
@@ -86,10 +91,11 @@ for s=1:Nsamp
         
     end
     
-    sim.r(s,:) = r;
-    sim.a(s,:) = a;
-end
-
+    %sim.r(s,:) = r;
+    %sim.a(s,:) = a;
+%end
+sim.r = r;
+sim.a = a;
 % evaluate
 % figure(3); clf; hold on
 % plot(V(2,:),'k')

@@ -6,10 +6,13 @@ addpath ../analysis/matlab
 load ../analysis/matlab/MCMC_all_clean
 
 
+model_str = 'softmax';
+
+
 for cond = 1:3
-    for subj = 1:3
+    for subj = 1:18
     clear V
-    disp(
+    disp(['Subj ',num2str(subj),', condition ',num2str(cond)])
         
         for r=1:4
             V(:,:,r) = data.values{subj,r,cond};
@@ -19,18 +22,34 @@ for cond = 1:3
         data_N_rwd = squeeze(data.N_rwd(subj,:,:,cond));
         
         %error_fun = @(params) model_error(params(1),params(2),V,data_ar',data_pstick')
-        error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd')
-        
-        paramsInit = [.14 .8 .6];
+        switch(model_str)
+            case 'mcmc_prior'
+                error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.14 .8 .6];
+                
+            case 'mcmc_prior_2betas'
+                error_fun =  @(params) model_lik([params(1) params(2)],[params(3) params(4)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.5 .5 .8 .6];
+                
+            case 'WS_LSW_soft'
+                error_fun = @(params) model_lik_pstickRwd(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.14 .8 .6];
+                
+            case 'softmax'
+                error_fun = @(params) model_lik_softmax(params,V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [0 .112 .871 4.61 .9836 .50 2.8 4];
+        end
+                
         error_fun(paramsInit);
         
-        %pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
-        pOpt = fmincon(error_fun,paramsInit)
+        pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
+        %pOpt = fmincon(error_fun,paramsInit)
         [~, m] = error_fun(pOpt);
         model.pOpt(:,subj,cond) = pOpt;
         model.ar(:,:,subj,cond) = m.ar;
         model.p_stick(:,:,subj,cond) = m.p_stick;
-        model.r(:,:subj,cond) = m.r;
+        %model.r(:,:,subj,cond) = m.r;
+        model.rAv(:,:,subj,cond) = m.rAv;
     end
 end
 
@@ -55,7 +74,7 @@ ylabel('q(2)')
 xlabel('condition')
 
 clear fhandle
-save model_fits_mcmc_noPrior
+%save model_fits_mcmc_noPrior
 
 %% plot averaged data
 load MCMC_all_clean
@@ -81,3 +100,23 @@ for cond = 1:3
     plot(data_av.p_stick(:,cond),'k','linewidth',cond)
     plot(mcmc_av.p_stick(:,cond),'r','linewidth',cond)
 end
+
+%% Plot sim reward vs actual reward
+model.rAv = permute(model.rAv,[3 2 1 4]);
+model.mean_rwd = squeeze(mean(model.rAv,2));
+data.mean_rwd = squeeze(mean(data.r,2));
+
+f = figure(4); clf; hold on
+set(f,'Position',[300 250 700 300])
+set(f,'Color','w')
+
+for c=1:3
+    subplot(1,3,c); hold on
+    plot(model.mean_rwd(:,:,c),data.mean_rwd(:,:,c),'o')
+    axis equal
+    plot([50 75],[50 75],'k:')
+    xlabel('Model')
+    ylabel('Data')
+end
+
+save(['mcmc',model_str])

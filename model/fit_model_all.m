@@ -6,6 +6,9 @@ addpath ../analysis/matlab
 load ../analysis/matlab/MCMC_all_clean
 
 
+model_str = 'softmax';
+
+
 for cond = 1:3
     for subj = 1:18
     clear V
@@ -19,9 +22,24 @@ for cond = 1:3
         data_N_rwd = squeeze(data.N_rwd(subj,:,:,cond));
         
         %error_fun = @(params) model_error(params(1),params(2),V,data_ar',data_pstick')
-        error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
-        
-        paramsInit = [.14 .8 .6];
+        switch(model_str)
+            case 'mcmc_prior'
+                error_fun = @(params) model_lik(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.14 .8 .6];
+                
+            case 'mcmc_prior_2betas'
+                error_fun =  @(params) model_lik([params(1) params(2)],[params(3) params(4)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.5 .5 .8 .6];
+                
+            case 'WS_LSW_soft'
+                error_fun = @(params) model_lik_pstickRwd(params(1),[params(2) params(3)],V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [.14 .8 .6];
+                
+            case 'softmax'
+                error_fun = @(params) model_lik_softmax(params,V,data_ar',data_pstick',data_N_rwd');
+                paramsInit = [0 .112 .871 4.61 .9836 .50 2.8 4];
+        end
+                
         error_fun(paramsInit);
         
         pOpt = fminsearch(error_fun,paramsInit)%,[],[],[],[],paramsLowerBound,paramsUpperBound)
@@ -101,4 +119,4 @@ for c=1:3
     ylabel('Data')
 end
 
-save model_fits_1beta
+save(['mcmc',model_str])

@@ -41,8 +41,8 @@ for s=1:Nsamp
     % pick first action at random
     %aa(:) = mnrnd(1,ones(1,Na)/Na);
     %a_samp = rand(1,Nt);
-    a(1) = mnrnd_fast(ones(1,Na)/Na);
-    %a(1) = sum(a_samp(:,i)) > cumsum(P_ap_ac,2),2)+1;
+    a(1) = mnrnd_fast(ones(
+    a(1) = sum(a_samp(:,i)) > cumsum(P_ap_ac,2),2)+1;
     %a(1) = find(aa);
     
     
@@ -65,7 +65,7 @@ for s=1:Nsamp
             P = exp(beta*mu_pre(:,i))/sum(exp(beta*mu_pre(:,i)));
             %aa = mnrnd(1,P); % sample from softmax distribution
             %a(i) = find(aa);
-            a(i) = mnrnd_fast(P');
+            a(i) = mnrnd_fast(P);
         end
         
         r(i) = V(a(i),i); % reward on trial 1
@@ -73,16 +73,12 @@ for s=1:Nsamp
         kappa(i) = sigma2_pre(a(i),i)/(sigma2_pre(a(i),i)+sigma_o^2);
         
         % kalman update
-        mu_post(:,i) = mu_pre(:,i);
-        sigma2_post(:,i) = sigma2_pre(:,i);
-        
-        %update observed elements
         mu_post(a(i),i) = mu_pre(a(i),i) + kappa(i)*delta(i);
         sigma2_post(a(i),i) = (1-kappa(i))*sigma2_pre(a(i),i);
         
-        %a_not_chosen = find(aa==0);
-        %mu_post(a_not_chosen,i) = mu_pre(a_not_chosen,i);
-        %sigma2_post(a_not_chosen,i) = sigma2_pre(a_not_chosen,i);
+        a_not_chosen = find(aa==0);
+        mu_post(a_not_chosen,i) = mu_pre(a_not_chosen,i);
+        sigma2_post(a_not_chosen,i) = sigma2_pre(a_not_chosen,i);
         
     end
     
